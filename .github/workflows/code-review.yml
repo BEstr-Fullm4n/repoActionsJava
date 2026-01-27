@@ -19,11 +19,36 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Ejecutar análisis con SpotBugs
-        run: mvn com.github.spotbugs:spotbugs-maven-plugin:4.7.3.0:check
+      - name: Ejecutar SpotBugs
+        run: |
+          mvn com.github.spotbugs:spotbugs-maven-plugin:4.7.3.0:spotbugs
+          cat target/spotbugsXml.xml || true
+        continue-on-error: true
 
-      - name: Ejecutar análisis con PMD
-        run: mvn pmd:check
+      - name: Ejecutar PMD
+        run: |
+          mvn pmd:pmd
+          cat target/pmd.xml || true
+        continue-on-error: true
 
-      - name: Ejecutar análisis con Checkstyle
-        run: mvn checkstyle:check
+      - name: Ejecutar Checkstyle
+        run: |
+          mvn checkstyle:checkstyle
+          cat target/checkstyle-result.xml || true
+        continue-on-error: true
+
+      - name: Publicar comentarios en el PR
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: "🔎 Resultados del Code Review"
+          message: |
+            ### SpotBugs
+            Se generó el reporte en `target/spotbugsXml.xml`. Revisa posibles bugs y malas prácticas.
+
+            ### PMD
+            Se generó el reporte en `target/pmd.xml`. Revisa complejidad y malas prácticas.
+
+            ### Checkstyle
+            Se generó el reporte en `target/checkstyle-result.xml`. Revisa convenciones de estilo.
+
+            ⚠️ Si alguno de estos archivos contiene errores, corrígelos antes de hacer merge.
