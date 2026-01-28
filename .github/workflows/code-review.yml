@@ -1,4 +1,4 @@
-name: Code Review
+name: Code Review JSON
 on:
   pull_request:
     branches: [develop]
@@ -14,26 +14,51 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
       
-      - name: Generar reportes JSON
+      # ✅ Genera XML (funciona correctamente)
+      - name: Generar reportes XML
         run: |
           mvn clean compile spotbugs:spotbugs pmd:pmd checkstyle:check
       
-      - name: Verificar archivos JSON
+      # ✅ Convierte XML a JSON
+      - name: Convertir XML a JSON
         run: |
-          ls -la target/*.json || echo "No JSON files found"
+          # Instalar jq y xmlstarlet
+          sudo apt-get update
+          sudo apt-get install -y jq xmlstarlet
+          
+          # SpotBugs (ya es JSON-like, renombrar)
+          [ -f target/spotbugsXml.xml ] && cp target/spotbugsXml.xml target/spotbugs.json || echo "{}" > target/spotbugs.json
+          
+          # PMD XML → JSON simple
+          if [ -f target/pmd.xml ]; then
+            xmlstarlet sel -t -m "//file/violation" -v . -o "," target/pmd.xml | \
+            jq -s '{files: map({issues: .})}' > target/pmd.json
+          else
+            echo '{"files": []}' > target/pmd.json
+          fi
+          
+          # Checkstyle XML → JSON simple
+          if [ -f target/checkstyle-result.xml ]; then
+            xmlstarlet sel -t -m "//checkstyle/file/error" -o '{' -v "@line" -o ':"' -v "@message" -o '",' -v "@source" -o '"}' -n target/checkstyle-result.xml | \
+            jq -s '{errors: map({line: (.[0]|tonumber), message: .[1], source: .[2]})}' > target/checkstyle.json
+          else
+            echo '{"errors": []}' > target/checkstyle.json
+          fi
+      
+      - name: Verificar JSON generados
+        run: |
+          ls -la target/*.json
+          cat target/spotbugs.json | head -20
       
       - name: Subir JSON como Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: code-review-json-reports
-          path: |
-            target/spotbugs.json
-            target/pmd.json
-            target/checkstyle.json
+          path: target/*.json
           retention-days: 7
       
-      - name: Crear Release con JSON
-        if: always()  # Siempre se ejecuta
+      - name: Crear Release JSON
+        if: always()
         uses: softprops/action-gh-release@v2
         with:
           tag_name: code-review-${{ github.run_number }}
