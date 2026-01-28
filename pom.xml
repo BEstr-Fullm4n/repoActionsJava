@@ -54,8 +54,15 @@
 				<artifactId>spotbugs-maven-plugin</artifactId>
 				<version>4.7.3.0</version>
 				<configuration>
-					<xmlOutput>false</xmlOutput>
-					<outputFormat>json</outputFormat>
+					<effort>Max</effort>
+					<threshold>Low</threshold>
+					<plugins>
+					<plugin>
+						<groupId>com.github.spotbugs</groupId>
+						<artifactId>spotbugs-json-report</artifactId>
+						<version>0.2.0</version>
+					</plugin>
+					</plugins>
 					<outputFile>target/spotbugs.json</outputFile>
 				</configuration>
 			</plugin>

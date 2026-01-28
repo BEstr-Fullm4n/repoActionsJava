@@ -19,13 +19,32 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Generar reportes de calidad en JSON
-        run: |
-          mvn clean verify \
-            com.github.spotbugs:spotbugs-maven-plugin:4.7.3.0:spotbugs \
-            pmd:pmd \
-            checkstyle:checkstyle -Dcheckstyle.format=json
+      - name: Ejecutar SpotBugs
+        run: mvn com.github.spotbugs:spotbugs-maven-plugin:4.7.3.0:spotbugs
         continue-on-error: true
+
+      - name: Ejecutar PMD
+        run: mvn pmd:pmd
+        continue-on-error: true
+
+      - name: Ejecutar Checkstyle
+        run: mvn checkstyle:checkstyle
+        continue-on-error: true
+
+      - name: Instalar xml2json
+        run: npm install -g xml-js
+
+      - name: Convertir reportes XML a JSON
+        run: |
+          if [ -f target/spotbugsXml.xml ]; then
+            npx xml2json target/spotbugsXml.xml --compact --spaces 2 > target/spotbugs.json
+          fi
+          if [ -f target/pmd.xml ]; then
+            npx xml2json target/pmd.xml --compact --spaces 2 > target/pmd.json
+          fi
+          if [ -f target/checkstyle-result.xml ]; then
+            npx xml2json target/checkstyle-result.xml --compact --spaces 2 > target/checkstyle.json
+          fi
 
       - name: Publicar comentarios en el PR
         uses: marocchino/sticky-pull-request-comment@v2
