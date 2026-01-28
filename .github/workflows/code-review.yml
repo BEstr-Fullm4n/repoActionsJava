@@ -14,52 +14,46 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
       
-      # CORREGIDO: Ejecuta plugins correctamente
-      - name: Generar reportes XML
+      - name: Generar reportes JSON
         run: |
           mvn clean compile spotbugs:spotbugs pmd:pmd checkstyle:check
-          
-      - name: Verificar archivos generados
+      
+      - name: Verificar archivos JSON
         run: |
-          ls -la target/
-          ls -la target/site/ || echo "No site dir"
-          
-      # Assets como Artifacts (visible inmediatamente)
-      - name: Subir XML como Artifacts
+          ls -la target/*.json || echo "No JSON files found"
+      
+      - name: Subir JSON como Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: code-review-xml-reports
+          name: code-review-json-reports
           path: |
-            target/spotbugsXml.xml
-            target/pmd.xml
-            target/checkstyle-result.xml
+            target/spotbugs.json
+            target/pmd.json
+            target/checkstyle.json
           retention-days: 7
       
-      - name: Publicar comentarios en el PR
-        uses: marocchino/sticky-pull-request-comment@v2
-        with:
-          header: "🔎 Resultados del Code Review (XML)"
-          message: |
-            Los reportes se generaron en formato XML y fueron adjuntados al Release:
-            - spotbugsXml.xml
-            - pmd.xml
-            - checkstyle-result.xml
-
-            ⚠️ Revisa los archivos en la sección **releases/tag/code-review-...** del Release para ver los errores detectados.
-            ⚠️ Si alguno de estos archivos contiene errores, corrígelos antes de hacer merge.
-      
-      # Opcional: Release público
-      - name: Crear Release con Assets
-        if: failure()  # Solo si hay errores
+      - name: Crear Release con JSON
+        if: always()  # Siempre se ejecuta
         uses: softprops/action-gh-release@v2
         with:
           tag_name: code-review-${{ github.run_number }}
-          name: "Code Review #${{ github.run_number }}"
-          draft: false  # Público
-          prerelease: false
+          name: "Code Review JSON #${{ github.run_number }}"
+          draft: false
           files: |
-            target/spotbugsXml.xml
-            target/pmd.xml
-            target/checkstyle-result.xml
+            target/spotbugs.json
+            target/pmd.json
+            target/checkstyle.json
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Comentar PR
+        if: always()
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: "🔎 Code Review JSON"
+          message: |
+            ✅ **Reportes JSON generados** y disponibles en:
+            • Artifacts: `code-review-json-reports`
+            • Release: `code-review-${{ github.run_number }}`
+            
+            📥 Descarga los JSON para revisar errores detallados.
