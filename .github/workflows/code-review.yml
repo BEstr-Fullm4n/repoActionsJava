@@ -17,7 +17,7 @@ jobs:
       # CORREGIDO: Ejecuta plugins correctamente
       - name: Generar reportes XML
         run: |
-          mvn clean compile spotbugs:spotbugs pmd:pmd checkstyle:checkstyle
+          mvn clean compile spotbugs:spotbugs pmd:pmd checkstyle:check
           
       - name: Verificar archivos generados
         run: |
