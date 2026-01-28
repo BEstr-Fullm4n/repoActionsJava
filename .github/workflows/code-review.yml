@@ -19,11 +19,6 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Instalar Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
       - name: Ejecutar análisis de calidad
         run: |
           mvn clean verify \
@@ -32,45 +27,30 @@ jobs:
             checkstyle:checkstyle
         continue-on-error: true
 
-      - name: Instalar xml2json
-        run: npm install -g xml-js
-
-      - name: Convertir reportes XML a JSON
-        run: |
-          if [ -f target/spotbugsXml.xml ]; then
-            npx xml2json target/spotbugsXml.xml --compact --spaces 2 > target/spotbugs.json
-          fi
-          if [ -f target/pmd.xml ]; then
-            npx xml2json target/pmd.xml --compact --spaces 2 > target/pmd.json
-          fi
-          if [ -f target/checkstyle-result.xml ]; then
-            npx xml2json target/checkstyle-result.xml --compact --spaces 2 > target/checkstyle.json
-          fi
-
       - name: Publicar comentarios en el PR
         uses: marocchino/sticky-pull-request-comment@v2
         with:
-          header: "🔎 Resultados del Code Review (JSON)"
+          header: "🔎 Resultados del Code Review (XML)"
           message: |
-            Los reportes se generaron en formato JSON y fueron adjuntados al Release:
-            - spotbugs.json
-            - pmd.json
-            - checkstyle.json
+            Los reportes se generaron en formato XML y fueron adjuntados al Release:
+            - spotbugsXml.xml
+            - pmd.xml
+            - checkstyle-result.xml
 
             ⚠️ Revisa los archivos en la sección **Assets** del Release para ver los errores detectados.
             ⚠️ Si alguno de estos archivos contiene errores, corrígelos antes de hacer merge.
 
-      - name: Adjuntar reportes JSON al Release
+      - name: Adjuntar reportes XML al Release
         uses: softprops/action-gh-release@v1
         with:
           tag_name: code-review-${{ github.run_number }}
           name: "Code Review Report ${{ github.run_number }}"
           body: |
             Reportes automáticos de calidad de código generados por GitHub Actions.
-            Incluye SpotBugs, PMD y Checkstyle en formato JSON.
+            Incluye SpotBugs, PMD y Checkstyle en formato XML.
           files: |
-            target/spotbugs.json
-            target/pmd.json
-            target/checkstyle.json
+            target/spotbugsXml.xml
+            target/pmd.xml
+            target/checkstyle-result.xml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
