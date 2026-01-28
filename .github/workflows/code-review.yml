@@ -19,16 +19,12 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Ejecutar SpotBugs
-        run: mvn com.github.spotbugs:spotbugs-maven-plugin:4.7.3.0:spotbugs
-        continue-on-error: true
-
-      - name: Ejecutar PMD
-        run: mvn pmd:pmd
-        continue-on-error: true
-
-      - name: Ejecutar Checkstyle
-        run: mvn checkstyle:checkstyle
+      - name: Generar reportes de calidad en JSON
+        run: |
+          mvn clean verify \
+            com.github.spotbugs:spotbugs-maven-plugin:4.7.3.0:spotbugs \
+            pmd:pmd \
+            checkstyle:checkstyle -Dcheckstyle.format=json
         continue-on-error: true
 
       - name: Publicar comentarios en el PR
@@ -36,16 +32,12 @@ jobs:
         with:
           header: "🔎 Resultados del Code Review (JSON)"
           message: |
-            ### SpotBugs
-            Se generó el reporte en `spotbugs.json`.
+            Los reportes se generaron en formato JSON y fueron adjuntados al Release:
+            - spotbugs.json
+            - pmd.json
+            - checkstyle.json
 
-            ### PMD
-            Se generó el reporte en `pmd.json`.
-
-            ### Checkstyle
-            Se generó el reporte en `checkstyle.json`.
-
-            ⚠️ Revisa los archivos JSON adjuntos al Release para ver los errores detectados.
+            ⚠️ Revisa los archivos en la sección **Assets** del Release para ver los errores detectados.
             ⚠️ Si alguno de estos archivos contiene errores, corrígelos antes de hacer merge.
 
       - name: Adjuntar reportes JSON al Release
