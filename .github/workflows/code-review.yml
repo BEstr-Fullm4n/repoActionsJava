@@ -37,13 +37,28 @@ jobs:
           header: "🔎 Resultados del Code Review (JSON)"
           message: |
             ### SpotBugs
-            Se generó el reporte en `target/spotbugs.json`.
+            Se generó el reporte en `spotbugs.json`.
 
             ### PMD
-            Se generó el reporte en `target/pmd.json`.
+            Se generó el reporte en `pmd.json`.
 
             ### Checkstyle
-            Se generó el reporte en `target/checkstyle.json`.
+            Se generó el reporte en `checkstyle.json`.
 
-            ⚠️ Revisa los archivos JSON para ver los errores detectados.
+            ⚠️ Revisa los archivos JSON adjuntos al Release para ver los errores detectados.
             ⚠️ Si alguno de estos archivos contiene errores, corrígelos antes de hacer merge.
+
+      - name: Adjuntar reportes JSON al Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: code-review-${{ github.run_number }}
+          name: "Code Review Report ${{ github.run_number }}"
+          body: |
+            Reportes automáticos de calidad de código generados por GitHub Actions.
+            Incluye SpotBugs, PMD y Checkstyle en formato JSON.
+          files: |
+            target/spotbugs.json
+            target/pmd.json
+            target/checkstyle.json
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
