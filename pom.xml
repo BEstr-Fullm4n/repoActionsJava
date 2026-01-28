@@ -49,85 +49,39 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
-			 <!-- SpotBugs -->
+			
+			<!-- SpotBugs JSON -->
 			<plugin>
 				<groupId>com.github.spotbugs</groupId>
 				<artifactId>spotbugs-maven-plugin</artifactId>
 				<version>4.9.3.0</version>
-				<dependencies>
-					<dependency>
-						<groupId>com.github.spotbugs</groupId>
-						<artifactId>spotbugs</artifactId>
-						<version>4.9.3</version>
-					</dependency>
-				</dependencies>
+				<configuration>
+					<format>json</format>
+					<outputDirectory>target</outputDirectory>
+					<spotbugsXmlOutputFile>spotbugsXml.xml</spotbugsXmlOutputFile>
+				</configuration>
 			</plugin>
 
-			<!-- PMD -->
+			<!-- PMD JSON -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-pmd-plugin</artifactId>
 				<version>3.21.2</version>
+				<configuration>
+					<format>json</format>
+				</configuration>
 			</plugin>
 
-			<!-- Checkstyle -->
+			<!-- Checkstyle JSON -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-checkstyle-plugin</artifactId>
 				<version>3.4.0</version>
-				<!--<configuration>
-					<failOnViolation>false</failOnViolation>  No falla build 
-				</configuration>-->
+				<configuration>
+					<outputFormat>json</outputFormat>
+				</configuration>
 			</plugin>
 
-			<!--<plugin>
-				<groupId>com.github.spotbugs</groupId>
-				<artifactId>spotbugs-maven-plugin</artifactId>
-				<version>4.7.3.0</version>
-				<configuration>
-					<effort>Max</effort>
-					<threshold>Low</threshold>
-					<plugins>
-					<plugin>
-						<groupId>com.github.spotbugs</groupId>
-						<artifactId>spotbugs-json-report</artifactId>
-						<version>0.2.0</version>
-					</plugin>
-					</plugins>
-					<outputFile>target/spotbugs.json</outputFile>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-pmd-plugin</artifactId>
-				<version>3.21.0</version>
-				<configuration>
-					<targetJdk>17</targetJdk>
-					<format>json</format>
-					<outputFile>target/pmd.json</outputFile>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-checkstyle-plugin</artifactId>
-				<version>3.3.1</version>
-				<configuration>
-					<consoleOutput>true</consoleOutput>
-					<outputFile>target/checkstyle.json</outputFile>
-					<configLocation>google_checks.xml</configLocation>
-				</configuration>
-				<executions>
-					<execution>
-					<phase>verify</phase>
-					<goals>
-						<goal>checkstyle</goal>
-					</goals>
-					<configuration>
-						<format>json</format>
-					</configuration>
-					</execution>
-				</executions>
-			</plugin>-->
 		</plugins>
 	</build>
 
