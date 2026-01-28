@@ -20,15 +20,15 @@ jobs:
           distribution: 'temurin'
 
       - name: Ejecutar SpotBugs
-        run: mvn com.github.spotbugs:spotbugs-maven-plugin:4.7.3.0:spotbugs
+        run: mvn clean verify com.github.spotbugs:spotbugs-maven-plugin:4.7.3.0:spotbugs
         continue-on-error: true
 
       - name: Ejecutar PMD
-        run: mvn pmd:pmd
+        run: mvn clean verify pmd:pmd
         continue-on-error: true
 
       - name: Ejecutar Checkstyle
-        run: mvn checkstyle:checkstyle
+        run: mvn clean verify checkstyle:checkstyle
         continue-on-error: true
 
       - name: Instalar xml2json
