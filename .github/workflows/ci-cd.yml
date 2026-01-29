@@ -4,29 +4,29 @@ on:
     branches: [develop]
 
 jobs:
-# 0️⃣ VALIDAR RAMA (NUEVO - BLOQUEA TODO)
-validate-branch:
-  runs-on: ubuntu-latest
-  outputs:
-    valid: ${{ steps.check.outputs.length_ok }}
-  steps:
-    - name: 📏 Verificar longitud rama < 64 chars
-      id: check
-      run: |
-        BRANCH_NAME="${{ github.head_ref }}"
-        LENGTH=${#BRANCH_NAME}
-        
-        echo "📏 Rama: '$BRANCH_NAME' → $LENGTH caracteres"
-        
-        if [ $LENGTH -ge 64 ]; then
-          echo "❌ ERROR: Rama excede 64 caracteres"
-          echo "length_ok=false" >> $GITHUB_OUTPUT
-          echo ":::error::❌ Rama '$BRANCH_NAME' tiene $LENGTH chars (MAX 64)" >> $GITHUB_STEP_SUMMARY
-          exit 1
-        else
-          echo "✅ Rama OK: $LENGTH chars"
-          echo "length_ok=true" >> $GITHUB_OUTPUT
-        fi
+  # 0️⃣ VALIDAR RAMA (NUEVO - BLOQUEA TODO)
+  validate-branch:
+    runs-on: ubuntu-latest
+    outputs:
+      valid: ${{ steps.check.outputs.length_ok }}
+    steps:
+      - name: 📏 Verificar longitud rama < 64 chars
+        id: check
+        run: |
+          BRANCH_NAME="${{ github.head_ref }}"
+          LENGTH=${#BRANCH_NAME}
+          
+          echo "📏 Rama: '$BRANCH_NAME' → $LENGTH caracteres"
+          
+          if [ $LENGTH -ge 64 ]; then
+            echo "❌ ERROR: Rama excede 64 caracteres"
+            echo "length_ok=false" >> $GITHUB_OUTPUT
+            echo ":::error::❌ Rama '$BRANCH_NAME' tiene $LENGTH chars (MAX 64)" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          else
+            echo "✅ Rama OK: $LENGTH chars"
+            echo "length_ok=true" >> $GITHUB_OUTPUT
+          fi
 
   # 1. CODE REVIEW (Bloquea todo si falla)
   code-review:
