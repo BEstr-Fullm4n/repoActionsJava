@@ -10,6 +10,13 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public final class GitactionsApplication {
     /**
+     * Constructor privado para la aplicación
+     */
+    private GitactionsApplication() {
+        throw new UnsupportedOperationException("Utility class");
+    }
+
+    /**
      * Método principal que inicia la aplicación.
      *
      * @param args Argumentos de línea de comandos
