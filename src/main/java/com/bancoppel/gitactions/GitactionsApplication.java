@@ -10,9 +10,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class GitactionsApplication {
 
 	/**
-     * Método principal que inicia la aplicación.
-     * @param args Argumentos de línea de comandos
-     */
+	 * Método principal que inicia la aplicación.
+	 * 
+	 * @param args Argumentos de línea de comandos
+	 */
 	public static void main(final String[] args) {
 		SpringApplication.run(GitactionsApplication.class, args);
 	}
