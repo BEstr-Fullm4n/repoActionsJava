@@ -117,25 +117,29 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  # 4. COMENTARIO FINAL EN PR (CORREGIDO)
+  # 4. COMENTARIO FINAL EN PR
   comment:
     runs-on: ubuntu-latest
     needs: [code-review, build, release]
     steps:
-      - name: 💬 Comentar PR
+      - name: 💬 Status Final PR
         if: always()
         uses: marocchino/sticky-pull-request-comment@v2
         with:
-          header: "🚦 CI/CD Status"
+          header: "🚦 CI/CD Pipeline Status"
           message: |
-            **Code Review**: ${{ needs.code-review.result }}
-            **Build JAR**: ${{ needs.build.result || 'Bloqueado' }}
-            **Release**: ${{ needs.release.result || 'Bloqueado' }}
-            
+            ## 📊 **Pipeline Results**
+            | Job | Status |
+            |-----|--------|
+            | 🔍 **Code Review** | ${{ needs.code-review.result }} |
+            | 🏗️ **Build JAR** | ${{ needs.build.result || 'Bloqueado' }} |
+            | 🚀 **Release** | ${{ needs.release.result || 'Bloqueado' }} |
+
             ${{ 
-              (needs.code-review.result == 'success' && needs.release.result == 'success') && 
-              format('✅ **JAR PUBLICADO** → [v1.0.%d](https://github.com/BEstr-Fullm4n/repoActionsJava/releases/tag/v1.0.%d)', github.run_number, github.run_number) || 
-              (needs.code-review.result != 'success' && '🔴 **Code Review falló** → XML en Artifacts') ||
-              '⏳ Pipeline en progreso...'
+              (needs.code-review.outputs.passed == 'true' && needs.release.result == 'success') && 
+              format('# ✅ **JAR PUBLICADO v1.0.{0}** 🚀\n\n[![JAR Download](https://img.shields.io/badge/JAR-v1.0.{0}-brightgreen)](https://github.com/BEstr-Fullm4n/repoActionsJava/releases/tag/v1.0.{0})', github.run_number) || 
+              needs.code-review.outputs.passed != 'true' && '## 🔴 **Code Review FALLÓ** → Revisa XML en Artifacts' || 
+              '## ⏳ **Pipeline ejecutándose...**'
             }}
+
 
