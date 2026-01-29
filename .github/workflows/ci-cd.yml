@@ -137,7 +137,7 @@ jobs:
 
             ${{ 
               (needs.code-review.outputs.passed == 'true' && needs.release.result == 'success') && 
-              format('# ✅ **JAR PUBLICADO v1.0.{0}** 🚀\n\n[![JAR Download](https://img.shields.io/badge/JAR-v1.0.{0}-brightgreen)](https://github.com/BEstr-Fullm4n/repoActionsJava/releases/tag/v1.0.{0})', github.run_number) || 
+              format('# ✅ **JAR PUBLICADO v1.0.{0}** 🚀 📥[![JAR Download](https://img.shields.io/badge/JAR-v1.0.{0}-brightgreen)](https://github.com/BEstr-Fullm4n/repoActionsJava/releases/tag/v1.0.{0})', github.run_number) || 
               needs.code-review.outputs.passed != 'true' && '## 🔴 **Code Review FALLÓ** → Revisa XML en Artifacts' || 
               '## ⏳ **Pipeline ejecutándose...**'
             }}
