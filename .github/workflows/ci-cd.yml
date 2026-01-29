@@ -77,11 +77,11 @@ jobs:
           name: gitactions-jar-${{ github.run_number }}
           path: target/gitactions-*.jar
 
-  # 3. RELEASE JAR (SOLO si build OK)
+  # 3. RELEASE JAR (CRÍTICO: siempre ejecuta release)
   release:
     runs-on: ubuntu-latest
     needs: [code-review, build]
-    if: needs.code-review.outputs.passed == 'true'  # ← SOLO SI REVIEW OK
+    if: needs.code-review.outputs.passed == 'true'
     steps:
       - uses: actions/checkout@v4
       
@@ -90,28 +90,28 @@ jobs:
         with:
           name: gitactions-jar-${{ github.run_number }}
           path: target/
-        continue-on-error: true  # ← SI NO ENCUENTRA JAR, CONTINÚA
+        continue-on-error: true
       
       - name: 🚀 Crear Release JAR
-        if: always()  # ← ✅ SIEMPRE SE EJECUTA
+        if: always()
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v1.0.${{ github.run_number }}  # v1.0.25
+          tag_name: v1.0.${{ github.run_number }}
           name: "Release v1.0.${{ github.run_number }}"
           body: |
-            ✅ CI/CD Pipeline completado
+            ✅ **CI/CD Pipeline completado**
             
             **Code Review**: ${{ needs.code-review.result }}
             **Build**: ${{ needs.build.result }}
             
             📦 **JAR**: target/gitactions-*.jar
             🔍 **XML**: code-review-xml-reports-${{ github.run_number }}
-        files: |
-          target/gitactions-*.jar
+          files: |
+            target/gitactions-*.jar
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  # 4. COMENTARIO FINAL EN PR
+  # 4. COMENTARIO FINAL SIMPLIFICADO
   comment:
     runs-on: ubuntu-latest
     needs: [code-review, build, release]
@@ -126,4 +126,8 @@ jobs:
             • Build JAR: ${{ needs.build.result }}
             • Release: ${{ needs.release.result }}
             
-            ${{ needs.code-review.outputs.passed == 'true' && format('✅ JAR → [v1.0.{0}](https://github.com/BEstr-Fullm4n/repoActionsJava/releases/tag/v1.0.{0})', github.run_number) || '🔴 Code Review falló → XML en Artifacts' }}
+            ${{ 
+              needs.code-review.outputs.passed == 'true' && 
+              format('✅ **JAR publicado** → [v1.0.{0}](https://github.com/BEstr-Fullm4n/repoActionsJava/releases/tag/v1.0.{0})', github.run_number) || 
+              '🔴 **Code Review falló** → Revisa XML: `code-review-xml-reports-' + github.run_number + '`'
+            }}
