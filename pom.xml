@@ -49,37 +49,36 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
-			
-			<!-- SpotBugs JSON -->
+
+			<!-- SpotBugs -->
 			<plugin>
 				<groupId>com.github.spotbugs</groupId>
 				<artifactId>spotbugs-maven-plugin</artifactId>
 				<version>4.9.3.0</version>
-				<configuration>
-					<format>json</format>
-					<outputDirectory>target</outputDirectory>
-					<spotbugsXmlOutputFile>spotbugsXml.xml</spotbugsXmlOutputFile>
-				</configuration>
+				<dependencies>
+				<dependency>
+					<groupId>com.github.spotbugs</groupId>
+					<artifactId>spotbugs</artifactId>
+					<version>4.9.3</version>
+				</dependency>
+				</dependencies>
 			</plugin>
 
-			<!-- PMD JSON -->
+			<!-- PMD -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-pmd-plugin</artifactId>
 				<version>3.21.2</version>
-				<configuration>
-					<format>json</format>
-				</configuration>
 			</plugin>
 
-			<!-- Checkstyle JSON -->
+			<!-- Checkstyle -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-checkstyle-plugin</artifactId>
 				<version>3.4.0</version>
-				<configuration>
-					<outputFormat>json</outputFormat>
-				</configuration>
+				<!--<configuration>
+				<failOnViolation>false</failOnViolation>  No falla build 
+				</configuration>-->
 			</plugin>
 
 		</plugins>

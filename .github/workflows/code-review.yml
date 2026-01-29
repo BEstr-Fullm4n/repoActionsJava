@@ -1,4 +1,4 @@
-name: Code Review JSON
+name: Code Review
 on:
   pull_request:
     branches: [develop]
@@ -14,71 +14,52 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
       
-      # ✅ Genera XML (funciona correctamente)
+      # CORREGIDO: Ejecuta plugins correctamente
       - name: Generar reportes XML
         run: |
           mvn clean compile spotbugs:spotbugs pmd:pmd checkstyle:check
-      
-      # ✅ Convierte XML a JSON
-      - name: Convertir XML a JSON
+          
+      - name: Verificar archivos generados
         run: |
-          # Instalar jq y xmlstarlet
-          sudo apt-get update
-          sudo apt-get install -y jq xmlstarlet
+          ls -la target/
+          ls -la target/site/ || echo "No site dir"
           
-          # SpotBugs (ya es JSON-like, renombrar)
-          [ -f target/spotbugsXml.xml ] && cp target/spotbugsXml.xml target/spotbugs.json || echo "{}" > target/spotbugs.json
-          
-          # PMD XML → JSON simple
-          if [ -f target/pmd.xml ]; then
-            xmlstarlet sel -t -m "//file/violation" -v . -o "," target/pmd.xml | \
-            jq -s '{files: map({issues: .})}' > target/pmd.json
-          else
-            echo '{"files": []}' > target/pmd.json
-          fi
-          
-          # Checkstyle XML → JSON simple
-          if [ -f target/checkstyle-result.xml ]; then
-            xmlstarlet sel -t -m "//checkstyle/file/error" -o '{' -v "@line" -o ':"' -v "@message" -o '",' -v "@source" -o '"}' -n target/checkstyle-result.xml | \
-            jq -s '{errors: map({line: (.[0]|tonumber), message: .[1], source: .[2]})}' > target/checkstyle.json
-          else
-            echo '{"errors": []}' > target/checkstyle.json
-          fi
-      
-      - name: Verificar JSON generados
-        run: |
-          ls -la target/*.json
-          cat target/spotbugs.json | head -20
-      
-      - name: Subir JSON como Artifacts
+      # Assets como Artifacts (visible inmediatamente)
+      - name: Subir XML como Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: code-review-json-reports
-          path: target/*.json
+          name: code-review-xml-reports
+          path: |
+            target/spotbugsXml.xml
+            target/pmd.xml
+            target/checkstyle-result.xml
           retention-days: 7
       
-      - name: Crear Release JSON
-        if: always()
+      # Opcional: Release público
+      - name: Crear Release con Assets
+        if: failure()  # Solo si hay errores
         uses: softprops/action-gh-release@v2
         with:
           tag_name: code-review-${{ github.run_number }}
-          name: "Code Review JSON #${{ github.run_number }}"
-          draft: false
+          name: "Code Review #${{ github.run_number }}"
+          draft: false  # Público
+          prerelease: false
           files: |
-            target/spotbugs.json
-            target/pmd.json
-            target/checkstyle.json
+            target/spotbugsXml.xml
+            target/pmd.xml
+            target/checkstyle-result.xml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      
-      - name: Comentar PR
-        if: always()
+
+      - name: Publicar comentarios en el PR
         uses: marocchino/sticky-pull-request-comment@v2
         with:
-          header: "🔎 Code Review JSON"
+          header: "🔎 Resultados del Code Review (XML)"
           message: |
-            ✅ **Reportes JSON generados** y disponibles en:
-            • Artifacts: `code-review-json-reports`
-            • Release: `code-review-${{ github.run_number }}`
-            
-            📥 Descarga los JSON para revisar errores detallados.
+            Los reportes se generaron en formato XML y fueron adjuntados al Release:
+            - spotbugsXml.xml
+            - pmd.xml
+            - checkstyle-result.xml
+
+            ⚠️ Revisa los archivos en la sección **code-review-...** del Release para ver los errores detectados.
+            ⚠️ Si alguno de estos archivos contiene errores, corrígelos antes de hacer merge.
