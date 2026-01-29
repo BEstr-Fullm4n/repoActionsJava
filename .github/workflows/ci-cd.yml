@@ -28,24 +28,27 @@ jobs:
             pmd:pmd \
             checkstyle:check || exit 1
       
-      - name: 📦 Subir XML Artifacts
+      # Assets como Artifacts (visible inmediatamente)
+      - name: 📦 Subir XML como Artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: code-review-xml-${{ github.run_number }}
+          name: code-review-xml-reports-${{ github.run_number }}
           path: |
             target/spotbugsXml.xml
             target/pmd.xml
             target/checkstyle-result.xml
           retention-days: 7
       
-      # Release SOLO si errores (para revisión)
-      - name: 🚨 Release con Errores
+      # Opcional: Release público con errores
+      - name: 🚨 Crear Release con Assets (Errores)
         if: failure()
         uses: softprops/action-gh-release@v2
         with:
           tag_name: code-review-${{ github.run_number }}
           name: "🚨 Errores Code Review #${{ github.run_number }}"
+          draft: false  # ← PÚBLICO inmediatamente
+          prerelease: false
           files: |
             target/spotbugsXml.xml
             target/pmd.xml
@@ -57,7 +60,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     needs: code-review
-    if: needs.code-review.outputs.passed == 'true'  # ← BLOQUEA AQUÍ
+    if: needs.code-review.outputs.passed == 'true'
     steps:
       - name: Checkout código
         uses: actions/checkout@v4
@@ -78,31 +81,39 @@ jobs:
           name: gitactions-jar-${{ github.run_number }}
           path: target/gitactions-*.jar
 
-  # 3. RELEASE JAR (SOLO si build OK)
+  # 3. RELEASE JAR (SOLO si build OK) - PUBLICADO EN ASSETS
   release:
     runs-on: ubuntu-latest
     needs: [code-review, build]
-    if: needs.build.result == 'success'  # ← SOLO SI TODO PASA
+    if: needs.build.result == 'success'
+    permissions:
+      contents: write
     steps:
-      - name: Checkout código
-        uses: actions/checkout@v4
-      
-      - name: 📥 Descargar JAR
+      - name: 📥 Descargar JAR desde Build
         uses: actions/download-artifact@v4
         with:
           name: gitactions-jar-${{ github.run_number }}
           path: target/
       
-      - name: 🚀 Crear Release JAR
+      - name: 🚀 Crear Release JAR PÚBLICO en Releases
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v1.0.${{ github.run_number }}
           name: "Release v1.0.${{ github.run_number }}"
           body: |
-            ✅ **CI/CD COMPLETADO** - Code Review + Build + Tests OK
+            ✅ **CI/CD COMPLETADO** - Code Review + Build OK
             
-            JAR generado automáticamente.
-          files: target/gitactions-*.jar
+            **📦 JAR Asset disponible en Releases:**
+            - `gitactions-*.jar`
+            
+            **Pipeline Status:**
+            - Code Review: ✅ Passed
+            - Build JAR: ✅ Success
+            - Run Number: #${{ github.run_number }}
+          draft: false      # ← PÚBLICO inmediatamente
+          prerelease: false # ← Release estable
+          files: |
+            target/gitactions-*.jar
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -112,6 +123,7 @@ jobs:
     needs: [code-review, build, release]
     steps:
       - name: 💬 Comentar PR
+        if: always()
         uses: marocchino/sticky-pull-request-comment@v2
         with:
           header: "🚦 CI/CD Status"
@@ -120,4 +132,9 @@ jobs:
             **Build JAR**: ${{ needs.build.result || 'Bloqueado' }}
             **Release**: ${{ needs.release.result || 'Bloqueado' }}
             
-            ${{(needs.code-review.result == 'success') && '✅ Todo OK → JAR en Release v1.0.' || '🔴 Code Review falló → Revisa XML en Artifacts'}}
+            ${{ 
+              needs.code-review.result == 'success' && 
+              needs.release.result == 'success' &&
+              format('✅ **JAR PUBLICADO** → [v1.0.%s](https://github.com/BEstr-Fullm4n/repoActionsJava/releases/tag/v1.0.%s)', github.run_number, github.run_number) || 
+              '🔴 **Code Review falló** → XML en Artifacts/Releases'
+            }}
