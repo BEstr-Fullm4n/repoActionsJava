@@ -72,9 +72,6 @@ jobs:
       - name: 🏗️ Compilar JAR
         run: mvn -B clean package -DskipTests
       
-      - name: ✅ Test (opcional)
-        run: mvn test || true
-      
       - name: 📦 Subir JAR Artifact
         uses: actions/upload-artifact@v4
         with:
