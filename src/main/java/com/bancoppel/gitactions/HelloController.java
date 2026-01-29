@@ -11,9 +11,9 @@ import org.springframework.web.bind.annotation.RestController;
 public class HelloController {
     /**
      * Endpoint de prueba que retorna saludo.
-     * 
+     *
      * @return Mensaje de bienvenida
-     * 
+     *
      */
     @GetMapping("/hello")
     public String hello() {
