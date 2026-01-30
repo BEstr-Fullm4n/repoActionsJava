@@ -4,9 +4,35 @@ on:
     branches: [develop]
 
 jobs:
+  # 0️. VALIDAR RAMA (NUEVO - BLOQUEA TODO)
+  validate-branch:
+    runs-on: ubuntu-latest
+    outputs:
+      valid: ${{ steps.check.outputs.length_ok }}
+    steps:
+      - name: 📏 Verificar longitud rama < 64 chars
+        id: check
+        run: |
+          BRANCH_NAME="${{ github.head_ref }}"
+          LENGTH=${#BRANCH_NAME}
+          
+          echo "📏 Rama: '$BRANCH_NAME' → $LENGTH caracteres"
+          
+          if [ $LENGTH -ge 64 ]; then
+            echo "❌ ERROR: Rama excede 64 caracteres"
+            echo "length_ok=false" >> $GITHUB_OUTPUT
+            echo ":::error::❌ Rama '$BRANCH_NAME' tiene $LENGTH chars (MAX 64)" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          else
+            echo "✅ Rama OK: $LENGTH chars"
+            echo "length_ok=true" >> $GITHUB_OUTPUT
+          fi
+
   # 1. CODE REVIEW (Bloquea todo si falla)
   code-review:
     runs-on: ubuntu-latest
+    needs: [validate-branch]           # ← DEPENDENCIA
+    if: needs.validate-branch.outputs.valid == 'true'  # ← CONDICIÓN
     outputs:
       passed: ${{ steps.review.outcome == 'success' }}
     steps:
@@ -27,6 +53,52 @@ jobs:
             spotbugs:spotbugs \
             pmd:pmd \
             checkstyle:check || exit 1
+
+      # Configurar Python 3.11
+      - name: 🐍 Setup Python & Convertir XML → JSON
+        if: always()
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      # Convertir XML → JSON
+      - name: 🔄 Convertir XML reports a JSON
+        if: always()
+        run: |
+          pip install xmltodict
+          
+          # SpotBugs → JSON (1 línea)
+          python3 -c "
+          import xmltodict, json
+          with open('target/spotbugsXml.xml') as f:
+              data = xmltodict.parse(f.read())
+          with open('target/spotbugs.json', 'w') as f:
+              json.dump(data, f, indent=2)
+          print('✅ spotbugs.json OK')
+          "
+          
+          # PMD → JSON (1 línea)
+          python3 -c "
+          import xmltodict, json
+          with open('target/pmd.xml') as f:
+              data = xmltodict.parse(f.read())
+          with open('target/pmd.json', 'w') as f:
+              json.dump(data, f, indent=2)
+          print('✅ pmd.json OK')
+          "
+          
+          # Checkstyle → JSON (1 línea)
+          python3 -c "
+          import xmltodict, json
+          with open('target/checkstyle-result.xml') as f:
+              data = xmltodict.parse(f.read())
+          with open('target/checkstyle.json', 'w') as f:
+              json.dump(data, f, indent=2)
+          print('✅ checkstyle.json OK')
+          "
+          
+          echo "📁 Archivos JSON generados:"
+          ls -la target/*.json
       
       # Assets como Artifacts (visible inmediatamente)
       - name: 📦 Subir XML como Artifacts
@@ -36,8 +108,11 @@ jobs:
           name: code-review-xml-reports-${{ github.run_number }}
           path: |
             target/spotbugsXml.xml
+            target/spotbugs.json
             target/pmd.xml
+            target/pmd.json
             target/checkstyle-result.xml
+            target/checkstyle.json
           retention-days: 7
       
       # Opcional: Release público con errores
