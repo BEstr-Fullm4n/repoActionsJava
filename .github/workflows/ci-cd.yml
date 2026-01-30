@@ -115,9 +115,8 @@ jobs:
             target/checkstyle.json
           retention-days: 7
       
-      # 🚨 Release con Assets DESDE ARTIFACTS (✅ FUNCIONA)
-      - name: 🚨 Crear Release con Assets (Errores)
-        if: failure()
+      # Crear release + subir assets (YA con archivos)
+      - name: 🚨 Crear Release + Assets
         uses: softprops/action-gh-release@v2
         with:
           tag_name: code-review-${{ github.run_number }}
@@ -125,8 +124,8 @@ jobs:
           body: |
             🔴 **Code Review FALLÓ** - Reports disponibles:
             
-            📄 **XML**
-            📊 **JSON**
+            📄 **XML Original**: spotbugs, pmd, checkstyle
+            📊 **JSON Procesado**: spotbugs.json, pmd.json, checkstyle.json
             
             **Run**: #${{ github.run_number }}
           draft: false
