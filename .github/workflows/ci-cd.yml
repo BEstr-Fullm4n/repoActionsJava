@@ -35,22 +35,9 @@ jobs:
     #if: needs.validate-branch.outputs.valid == 'true'  # ← CONDICIÓN
     outputs:
       passed: ${{ steps.review.outcome == 'success' }}
-      artifact_id: ${{ steps.pom-info.outputs.artifact_id }}
-      project_name: ${{ steps.pom-info.outputs.project_name }}
     steps:
       - name: Checkout código
         uses: actions/checkout@v4
-
-      # Leer pom.xml
-      - name: 📋 Leer artifactId desde pom.xml
-        id: pom-info
-        run: |
-          ARTIFACT_ID=$(xmlstarlet sel -t -v "//artifactId" pom.xml | head -1 | tr -d '\n\r')
-          PROJECT_NAME=$(xmlstarlet sel -t -v "//name" pom.xml | head -1 | tr -d '\n\r' || echo "$ARTIFACT_ID")
-          echo "artifact_id=$ARTIFACT_ID" >> $GITHUB_OUTPUT
-          echo "project_name=$PROJECT_NAME" >> $GITHUB_OUTPUT
-          echo "📦 artifactId: $ARTIFACT_ID"
-          echo "📦 project_name: $PROJECT_NAME"
       
       - name: Configurar JDK 17
         uses: actions/setup-java@v4
@@ -152,17 +139,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: code-review
     if: needs.code-review.outputs.passed == 'true'
-    outputs:  # AGREGADO
-      artifact_id: ${{ steps.pom-info.outputs.artifact_id }}
     steps:
       - name: Checkout código
         uses: actions/checkout@v4
-
-      - name: 📋 Leer artifactId
-        id: pom-info
-        run: |
-          ARTIFACT_ID=$(xmlstarlet sel -t -v "//artifactId" pom.xml | head -1 | tr -d '\n\r')
-          echo "artifact_id=$ARTIFACT_ID" >> $GITHUB_OUTPUT
       
       - name: Configurar JDK 17
         uses: actions/setup-java@v4
@@ -177,8 +156,8 @@ jobs:
       - name: 📦 Subir JAR Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: "${{ steps.pom-info.outputs.artifact_id }}-jar-${{ github.run_number }}"
-          path: "target/${{ steps.pom-info.outputs.artifact_id }}-*.jar"
+          name: gitactions-jar-${{ github.run_number }}
+          path: target/gitactions-*.jar
 
   # 3. RELEASE JAR (SOLO si build OK) - PUBLICADO EN ASSETS
   release:
@@ -191,7 +170,7 @@ jobs:
       - name: 📥 Descargar JAR desde Build
         uses: actions/download-artifact@v4
         with:
-          name: "${{ needs.build.outputs.artifact_id }}-jar-${{ github.run_number }}"
+          name: gitactions-jar-${{ github.run_number }}
           path: target/
       
       - name: 🚀 Crear Release JAR PÚBLICO en Releases
@@ -203,7 +182,7 @@ jobs:
             ✅ **CI/CD COMPLETADO** - Code Review + Build OK
             
             **📦 JAR Asset disponible en Releases:**
-            `${{ needs.build.outputs.artifact_id }}-*.jar`
+            - `gitactions-*.jar`
             
             **Pipeline Status:**
             - Code Review: ✅ Passed
@@ -212,7 +191,7 @@ jobs:
           draft: false      # ← PÚBLICO inmediatamente
           prerelease: false # ← Release estable
           files: |
-            target/${{ needs.build.outputs.artifact_id }}-*.jar
+            target/gitactions-*.jar
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
