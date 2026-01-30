@@ -118,38 +118,28 @@ jobs:
       # 🚨 Release con Assets DESDE ARTIFACTS (✅ FUNCIONA)
       - name: 🚨 Crear Release con Assets (Errores)
         if: failure()
-        steps:
-          # 1️⃣ Descargar artifact que SÍ contiene los archivos
-          - name: 📥 Descargar Reports Artifact
-            uses: actions/download-artifact@v4
-            with:
-              name: code-review-reports-${{ github.run_number }}
-              path: reports/
-          
-          # 2️⃣ Crear release + subir assets (YA con archivos)
-          - name: 🚨 Crear Release + Assets
-            uses: softprops/action-gh-release@v2
-            with:
-              tag_name: code-review-${{ github.run_number }}
-              name: "🚨 Errores Code Review #${{ github.run_number }}"
-              body: |
-                🔴 **Code Review FALLÓ** - Reports disponibles:
-                
-                📄 **XML**
-                📊 **JSON**
-                
-                **Run**: #${{ github.run_number }}
-              draft: false
-              prerelease: false
-              files: |
-                reports/spotbugsXml.xml
-                reports/spotbugs.json
-                reports/pmd.xml
-                reports/pmd.json
-                reports/checkstyle-result.xml
-                reports/checkstyle.json
-            env:
-              GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: code-review-${{ github.run_number }}
+          name: "🚨 Errores Code Review #${{ github.run_number }}"
+          body: |
+            🔴 **Code Review FALLÓ** - Reports disponibles:
+            
+            📄 **XML**
+            📊 **JSON**
+            
+            **Run**: #${{ github.run_number }}
+          draft: false
+          prerelease: false
+          files: |
+            reports/spotbugsXml.xml
+            reports/spotbugs.json
+            reports/pmd.xml
+            reports/pmd.json
+            reports/checkstyle-result.xml
+            reports/checkstyle.json
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   # 2. BUILD JAR (SOLO si Code Review pasa ✅)
   build:
