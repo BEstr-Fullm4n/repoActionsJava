@@ -8,7 +8,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * Clase principal de la aplicación Spring Boot.
  */
 @SpringBootApplication
-public class GitactionsApplication {
+public final class GitactionsApplication {
     /**
      * Constructor privado para la aplicación.
      */
@@ -22,7 +22,7 @@ public class GitactionsApplication {
      * @param args Argumentos de línea de comandos
      *
      */
-    public static void main(String[] args) {
+    public static void main(final String[] args) {
         SpringApplication.run(GitactionsApplication.class, args);
     }
 }
