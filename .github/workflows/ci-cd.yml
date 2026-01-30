@@ -105,13 +105,13 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: code-review-xml-reports-${{ github.run_number }}
+          name: code-review-reports-${{ github.run_number }}
           path: |
-            target/spotbugsXml.xml
+            target/spotbugs*.xml
             target/spotbugs.json
             target/pmd.xml
             target/pmd.json
-            target/checkstyle-result.xml
+            target/checkstyle*.xml
             target/checkstyle.json
           retention-days: 7
       
