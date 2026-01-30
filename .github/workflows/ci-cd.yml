@@ -41,7 +41,7 @@ jobs:
       - name: Checkout código
         uses: actions/checkout@v4
 
-      # ✅ DINÁMICO: Leer pom.xml
+      # Leer pom.xml
       - name: 📋 Leer artifactId desde pom.xml
         id: pom-info
         run: |
@@ -147,12 +147,12 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  # 2. BUILD JAR (SOLO si Code Review pasa ✅)
+  # 2. BUILD JAR (SOLO si Code Review pasa)
   build:
     runs-on: ubuntu-latest
     needs: code-review
     if: needs.code-review.outputs.passed == 'true'
-    outputs:  # 🔥 AGREGADO
+    outputs:  # AGREGADO
       artifact_id: ${{ steps.pom-info.outputs.artifact_id }}
     steps:
       - name: Checkout código
