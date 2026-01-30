@@ -22,7 +22,7 @@ public final class GitactionsApplication {
      * @param args Argumentos de línea de comandos
      *
      */
-    public static void main(final String[] args) {
+    public static void main(String[] args) {
         SpringApplication.run(GitactionsApplication.class, args);
     }
 }
