@@ -115,28 +115,22 @@ jobs:
             target/checkstyle.json
           retention-days: 7
       
-      # Crear release + subir assets (YA con archivos)
-      - name: 🚨 Crear Release + Assets
+      # Opcional: Release público con errores
+      - name: 🚨 Crear Release con Assets (Errores)
+        if: failure()
         uses: softprops/action-gh-release@v2
         with:
           tag_name: code-review-${{ github.run_number }}
           name: "🚨 Errores Code Review #${{ github.run_number }}"
-          body: |
-            🔴 **Code Review FALLÓ** - Reports disponibles:
-            
-            📄 **XML Original**: spotbugs, pmd, checkstyle
-            📊 **JSON Procesado**: spotbugs.json, pmd.json, checkstyle.json
-            
-            **Run**: #${{ github.run_number }}
-          draft: false
+          draft: false  # ← PÚBLICO inmediatamente
           prerelease: false
           files: |
-            reports/spotbugsXml.xml
-            reports/spotbugs.json
-            reports/pmd.xml
-            reports/pmd.json
-            reports/checkstyle-result.xml
-            reports/checkstyle.json
+            target/spotbugsXml.xml
+            target/spotbugs.json
+            target/pmd.xml
+            target/pmd.json
+            target/checkstyle-result.xml
+            target/checkstyle.json
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
